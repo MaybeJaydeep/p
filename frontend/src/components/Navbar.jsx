@@ -12,6 +12,9 @@ const Navbar = () => {
         <Link to="/login" className="text-gray-700 dark:text-gray-300">
           Login
         </Link>
+        <Link to="/upload" className="text-gray-700 dark:text-gray-300">
+          Upload JD
+        </Link>
         <Link to="/register" className="text-gray-700 dark:text-gray-300">
           Register
         </Link>
