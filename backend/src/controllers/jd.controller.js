@@ -49,3 +49,15 @@ export const uploadJD = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+export const getMyJDs = async (req, res) => {
+  try {
+    const jds = await JobDescription.find({
+      uploadedBy: req.user.id
+    }).sort({ createdAt: -1 });
+
+    res.json(jds);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
