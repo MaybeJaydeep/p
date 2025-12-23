@@ -17,6 +17,7 @@ const UploadJD = () => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [progress, setProgress] = useState(0); // ✅ MOVED HERE
 
   // ✅ Handle file validation
   const handleFile = (selectedFile) => {
@@ -59,7 +60,17 @@ const UploadJD = () => {
 
     try {
       setLoading(true);
-      await api.post("/jd/upload", formData);
+      setProgress(0);
+
+      await api.post("/jd/upload", formData, {
+        onUploadProgress: (e) => {
+          const percent = Math.round(
+            (e.loaded * 100) / e.total
+          );
+          setProgress(percent);
+        },
+      });
+
       navigate("/");
     } catch (err) {
       setError(err.response?.data?.message || "Upload failed");
@@ -98,12 +109,12 @@ const UploadJD = () => {
             handleFile(e.dataTransfer.files[0]);
           }}
           className={`border-2 border-dashed rounded-2xl h-[300px]
-          flex items-center justify-center text-center transition
-          ${
-            dragActive
-              ? "border-primary bg-primary/10"
-              : "border-muted"
-          }`}
+            flex items-center justify-center text-center transition
+            ${
+              dragActive
+                ? "border-primary bg-primary/10"
+                : "border-muted"
+            }`}
         >
           <input
             type="file"
@@ -152,7 +163,9 @@ const UploadJD = () => {
           <Label>Company Name</Label>
           <Input
             value={companyName}
-            onChange={(e) => setCompanyName(e.target.value)}
+            onChange={(e) =>
+              setCompanyName(e.target.value)
+            }
             placeholder="Google"
             required
           />
@@ -162,13 +175,24 @@ const UploadJD = () => {
           <Label>Job Title</Label>
           <Input
             value={jobTitle}
-            onChange={(e) => setJobTitle(e.target.value)}
+            onChange={(e) =>
+              setJobTitle(e.target.value)
+            }
             placeholder="Software Engineer"
             required
           />
         </div>
 
-        <div className="flex items-end">
+        {loading && (
+          <div className="w-full bg-muted rounded h-2 overflow-hidden md:col-span-3">
+            <div
+              className="h-full bg-primary transition-all"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        )}
+
+        <div className="flex items-end md:col-span-3">
           <Button
             type="submit"
             className="w-full"

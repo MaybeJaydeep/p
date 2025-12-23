@@ -1,56 +1,36 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { useNavigate } from "react-router-dom";
 
 const JDCard = ({ jd }) => {
+  const navigate = useNavigate();
+
   return (
-    <Card className="hover:shadow-lg transition">
-      <CardHeader>
-        <CardTitle className="text-lg">
-          {jd.companyName}
-        </CardTitle>
-        <p className="text-sm text-muted-foreground">
-          {jd.jobTitle}
-        </p>
-      </CardHeader>
+    <div
+      onClick={() => navigate(`/jd/${jd._id}`)}
+      className="border rounded-xl p-5 cursor-pointer
+                 hover:shadow-md hover:border-primary
+                 transition bg-background"
+    >
+      <h3 className="text-lg font-semibold">
+        {jd.companyName}
+      </h3>
 
-      <CardContent className="space-y-4">
-        {/* Role */}
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">
-            Role
-          </span>
-          <Badge variant="secondary">
-            {jd.analysis?.role || "Not detected"}
-          </Badge>
+      <p className="text-sm text-muted-foreground mt-1">
+        {jd.jobTitle}
+      </p>
+
+      {jd.technologies && jd.technologies.length > 0 && (
+        <div className="flex flex-wrap gap-2 mt-3">
+          {jd.technologies.slice(0, 4).map((tech) => (
+            <span
+              key={tech}
+              className="text-xs px-2 py-1 rounded-full bg-primary/10"
+            >
+              {tech}
+            </span>
+          ))}
         </div>
-
-        {/* Technologies */}
-        <div>
-          <p className="text-sm text-muted-foreground mb-2">
-            Technologies
-          </p>
-
-          <div className="flex flex-wrap gap-2">
-            {jd.analysis?.technologies?.length > 0 ? (
-              jd.analysis.technologies.map((tech) => (
-                <Badge key={tech} variant="outline">
-                  {tech}
-                </Badge>
-              ))
-            ) : (
-              <span className="text-sm text-muted-foreground">
-                Not detected
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* Summary */}
-        <p className="text-sm leading-relaxed text-muted-foreground">
-          {jd.analysis?.summary}
-        </p>
-      </CardContent>
-    </Card>
+      )}
+    </div>
   );
 };
 

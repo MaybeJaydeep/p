@@ -5,6 +5,7 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import UploadJD from "./pages/UploadJD";
 import ProtectedRoute from "./components/ProtectedRoute";
+import JDDetail from "./pages/JDDetail";
 
 function App() {
   return (
@@ -22,6 +23,8 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        <Route path="/jd/:id" element={<JDDetail />} />
 
         <Route
           path="/upload"
