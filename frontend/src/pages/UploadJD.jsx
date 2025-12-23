@@ -1,6 +1,11 @@
-import { useState } from "react";
-import api from "../services/api";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+
+import api from "@/services/api";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const UploadJD = () => {
   const navigate = useNavigate();
@@ -8,8 +13,35 @@ const UploadJD = () => {
   const [companyName, setCompanyName] = useState("");
   const [jobTitle, setJobTitle] = useState("");
   const [file, setFile] = useState(null);
+  const [dragActive, setDragActive] = useState(false);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // ✅ Handle file validation
+  const handleFile = (selectedFile) => {
+    if (
+      selectedFile &&
+      (selectedFile.type === "application/pdf" ||
+        selectedFile.type === "text/plain")
+    ) {
+      setFile(selectedFile);
+      setError("");
+    } else {
+      setError("Only PDF or TXT files are allowed");
+    }
+  };
+
+  // ✅ Handle paste (Ctrl + V)
+  useEffect(() => {
+    const handlePaste = (e) => {
+      const item = e.clipboardData?.files?.[0];
+      if (item) handleFile(item);
+    };
+
+    window.addEventListener("paste", handlePaste);
+    return () => window.removeEventListener("paste", handlePaste);
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -27,12 +59,7 @@ const UploadJD = () => {
 
     try {
       setLoading(true);
-      await api.post("/jd/upload", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data"
-        }
-      });
-      alert("JD uploaded successfully");
+      await api.post("/jd/upload", formData);
       navigate("/");
     } catch (err) {
       setError(err.response?.data?.message || "Upload failed");
@@ -42,50 +69,114 @@ const UploadJD = () => {
   };
 
   return (
-    <div className="flex justify-center items-center h-[85vh]">
+    <div className="min-h-screen bg-background px-6 py-10">
+      {/* HEADER */}
+      <div className="text-center mb-10">
+        <h1 className="text-3xl font-bold">
+          Upload Job Description
+        </h1>
+        <p className="text-muted-foreground mt-1">
+          Drag, drop, or paste a JD to analyze the role and required skills
+        </p>
+      </div>
+
+      {/* DROP ZONE */}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="max-w-4xl mx-auto mb-8"
+      >
+        <div
+          onDragOver={(e) => {
+            e.preventDefault();
+            setDragActive(true);
+          }}
+          onDragLeave={() => setDragActive(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setDragActive(false);
+            handleFile(e.dataTransfer.files[0]);
+          }}
+          className={`border-2 border-dashed rounded-2xl h-[300px]
+          flex items-center justify-center text-center transition
+          ${
+            dragActive
+              ? "border-primary bg-primary/10"
+              : "border-muted"
+          }`}
+        >
+          <input
+            type="file"
+            accept=".pdf,.txt"
+            hidden
+            id="fileInput"
+            onChange={(e) =>
+              handleFile(e.target.files[0])
+            }
+          />
+
+          <label
+            htmlFor="fileInput"
+            className="cursor-pointer px-6"
+          >
+            {file ? (
+              <p className="text-lg font-medium">
+                📄 {file.name}
+              </p>
+            ) : (
+              <>
+                <p className="text-lg font-medium">
+                  Drag & drop your JD here
+                </p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  or click to browse • or paste (Ctrl + V)
+                </p>
+              </>
+            )}
+          </label>
+        </div>
+      </motion.div>
+
+      {/* FORM */}
       <form
         onSubmit={handleSubmit}
-        className="bg-white dark:bg-gray-800 p-6 rounded shadow w-[420px]"
+        className="max-w-4xl mx-auto grid gap-4 md:grid-cols-3"
       >
-        <h2 className="text-2xl font-bold mb-4 text-center">
-          Upload Job Description
-        </h2>
+        {error && (
+          <p className="text-red-500 md:col-span-3">
+            {error}
+          </p>
+        )}
 
-        {error && <p className="text-red-500 mb-2">{error}</p>}
+        <div className="space-y-1">
+          <Label>Company Name</Label>
+          <Input
+            value={companyName}
+            onChange={(e) => setCompanyName(e.target.value)}
+            placeholder="Google"
+            required
+          />
+        </div>
 
-        <input
-          type="text"
-          placeholder="Company Name"
-          className="w-full p-2 mb-3 border rounded"
-          value={companyName}
-          onChange={(e) => setCompanyName(e.target.value)}
-          required
-        />
+        <div className="space-y-1">
+          <Label>Job Title</Label>
+          <Input
+            value={jobTitle}
+            onChange={(e) => setJobTitle(e.target.value)}
+            placeholder="Software Engineer"
+            required
+          />
+        </div>
 
-        <input
-          type="text"
-          placeholder="Job Title"
-          className="w-full p-2 mb-3 border rounded"
-          value={jobTitle}
-          onChange={(e) => setJobTitle(e.target.value)}
-          required
-        />
-
-        <input
-          type="file"
-          accept=".pdf,.txt"
-          className="w-full p-2 mb-4"
-          onChange={(e) => setFile(e.target.files[0])}
-          required
-        />
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white p-2 rounded"
-        >
-          {loading ? "Uploading..." : "Upload JD"}
-        </button>
+        <div className="flex items-end">
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={loading}
+          >
+            {loading ? "Uploading..." : "Upload JD"}
+          </Button>
+        </div>
       </form>
     </div>
   );
