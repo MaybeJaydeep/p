@@ -1,15 +1,28 @@
-import { useState } from "react";
-import api from "../services/api";
+import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+
+import api from "@/services/api";
+import { AuthContext } from "@/context/AuthContext";
+
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 
 const Login = () => {
   const navigate = useNavigate();
+  const { login } = useContext(AuthContext);
 
   const [form, setForm] = useState({
     email: "",
-    password: ""
+    password: "",
   });
-
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -24,10 +37,7 @@ const Login = () => {
 
     try {
       const res = await api.post("/auth/login", form);
-
-      // store access token
-      localStorage.setItem("accessToken", res.data.accessToken);
-
+      login(res.data.accessToken);
       navigate("/");
     } catch (err) {
       setError(err.response?.data?.message || "Login failed");
@@ -37,43 +47,60 @@ const Login = () => {
   };
 
   return (
-    <div className="flex justify-center items-center h-[80vh]">
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white dark:bg-gray-800 p-6 rounded shadow w-96"
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <motion.div
+        initial={{ opacity: 0, y: 25 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
       >
-        <h2 className="text-2xl font-bold mb-4 text-center">
-          Login
-        </h2>
+        <Card className="w-[380px]">
+          <CardHeader>
+            <CardTitle className="text-center text-2xl">
+              Login to PlacedPrep
+            </CardTitle>
+          </CardHeader>
 
-        {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {error && (
+                <p className="text-sm text-red-500">{error}</p>
+              )}
 
-        <input
-          name="email"
-          type="email"
-          placeholder="Email"
-          className="w-full p-2 mb-3 border rounded"
-          onChange={handleChange}
-          required
-        />
+              <div className="space-y-1">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="you@example.com"
+                  onChange={handleChange}
+                  required
+                />
+              </div>
 
-        <input
-          name="password"
-          type="password"
-          placeholder="Password"
-          className="w-full p-2 mb-3 border rounded"
-          onChange={handleChange}
-          required
-        />
+              <div className="space-y-1">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  name="password"
+                  type="password"
+                  placeholder="••••••••"
+                  onChange={handleChange}
+                  required
+                />
+              </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-green-600 hover:bg-green-700 text-white p-2 rounded"
-        >
-          {loading ? "Logging in..." : "Login"}
-        </button>
-      </form>
+              <Button
+                type="submit"
+                className="w-full"
+                disabled={loading}
+              >
+                {loading ? "Logging in..." : "Login"}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </motion.div>
     </div>
   );
 };

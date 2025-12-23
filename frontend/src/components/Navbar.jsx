@@ -1,23 +1,35 @@
 import { Link } from "react-router-dom";
-import ThemeToggle from "../components/ThemeToggle";
+import { useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
+import ThemeToggle from "./ThemeToggle";
 
 const Navbar = () => {
+  const { user, logout } = useContext(AuthContext);
+
   return (
-    <nav className="flex justify-between items-center p-4 bg-white dark:bg-gray-900 shadow">
-      <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+    <nav className="flex justify-between items-center px-6 py-4 bg-gray-100 dark:bg-gray-900">
+      <Link to="/" className="font-bold text-lg">
         PlacedPrep
-      </h1>
+      </Link>
 
       <div className="flex items-center gap-4">
-        <Link to="/login" className="text-gray-700 dark:text-gray-300">
-          Login
-        </Link>
-        <Link to="/upload" className="text-gray-700 dark:text-gray-300">
-          Upload JD
-        </Link>
-        <Link to="/register" className="text-gray-700 dark:text-gray-300">
-          Register
-        </Link>
+        {user ? (
+          <>
+            <Link to="/upload">Upload JD</Link>
+            <button
+              onClick={logout}
+              className="text-red-600"
+            >
+              Logout
+            </button>
+          </>
+        ) : (
+          <>
+            <Link to="/login">Login</Link>
+            <Link to="/register">Register</Link>
+          </>
+        )}
+
         <ThemeToggle />
       </div>
     </nav>
