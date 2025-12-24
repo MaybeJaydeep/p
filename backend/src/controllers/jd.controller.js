@@ -3,15 +3,59 @@ import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
 import JobDescription from "../models/JobDescription.model.js";
 import { analyzeJD } from "../utils/jdAnalyzer.js";
 
-export const uploadJD = async (req, res) => {
+/**
+ * GET /api/jd/:id
+ * Get single JD with analysis
+ */
+export const getJDById = async (req, res) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({ message: "No file uploaded" });
+    const jd = await JobDescription.findById(req.params.id);
+
+    if (!jd) {
+      return res.status(404).json({
+        message: "Job Description not found",
+      });
     }
 
-    let text = "";
+    res.json({
+      _id: jd._id,
+      companyName: jd.companyName,
+      jobTitle: jd.jobTitle,
+      rawText: jd.rawText,
+      identifiedRole: jd.analysis?.role || null,
+      technologies: jd.analysis?.technologies || [],
+      summary: jd.analysis?.summary || null,
+      createdAt: jd.createdAt,
+    });
+  } catch (error) {
+    console.error("GET JD BY ID ERROR:", error);
+    res.status(500).json({
+      message: "Server error",
+    });
+  }
+};
 
-    // PDF handling
+/**
+ * POST /api/jd/upload
+ * Upload JD file (PDF / TXT), extract text, analyze, store
+ */
+
+
+export const uploadJD = async (req, res) => {
+  try {
+    console.log("USER:", req.user);
+    console.log("FILE:", req.file);
+    const { companyName, jobTitle } = req.body;
+
+    if (!req.file) {
+      return res.status(400).json({
+        message: "JD file is required",
+      });
+    }
+
+    let rawText = "";
+
+    // ---------- PDF ----------
     if (req.file.mimetype === "application/pdf") {
       const buffer = new Uint8Array(
         fs.readFileSync(req.file.path)
@@ -23,41 +67,68 @@ export const uploadJD = async (req, res) => {
       for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
         const content = await page.getTextContent();
-        text += content.items.map((item) => item.str).join(" ") + " ";
+        rawText +=
+          content.items.map((item) => item.str).join(" ") + " ";
       }
-    } 
-    // TXT handling
-    else {
-      text = fs.readFileSync(req.file.path, "utf-8");
+    }
+    // ---------- TXT ----------
+    else if (req.file.mimetype === "text/plain") {
+      rawText = fs.readFileSync(req.file.path, "utf-8");
+    } else {
+      return res.status(400).json({
+        message: "Unsupported file type",
+      });
     }
 
-    // 🔥 ANALYZE JD
-    const analysis = analyzeJD(text);
+    // ---------- NLP / ANALYSIS ----------
+    const analysis = analyzeJD(rawText);
 
-    // Save to DB
+    // ---------- SAVE ----------
     const jd = await JobDescription.create({
-      companyName: req.body.companyName,
-      jobTitle: req.body.jobTitle,
-      rawText: text,
+      companyName,
+      jobTitle,
+      rawText,
       analysis,
       uploadedBy: req.user.id
     });
 
-    res.status(201).json(jd);
-  } catch (err) {
-    console.error("JD PARSE ERROR 👉", err);
-    res.status(500).json({ message: err.message });
+    res.status(201).json({
+      _id: jd._id,
+      companyName: jd.companyName,
+      jobTitle: jd.jobTitle,
+      technologies: jd.analysis?.technologies || [],
+    });
+  } catch (error) {
+    console.error("UPLOAD JD ERROR:", error);
+    res.status(500).json({
+      message: "JD upload failed",
+    });
   }
 };
 
+/**
+ * GET /api/jd/my
+ * Get all JDs uploaded by logged-in user
+ */
 export const getMyJDs = async (req, res) => {
   try {
     const jds = await JobDescription.find({
-      uploadedBy: req.user.id
+      uploadedBy: req.user.id,
     }).sort({ createdAt: -1 });
 
-    res.json(jds);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.json(
+      jds.map((jd) => ({
+        _id: jd._id,
+        companyName: jd.companyName,
+        jobTitle: jd.jobTitle,
+        technologies: jd.analysis?.technologies || [],
+        createdAt: jd.createdAt,
+      }))
+    );
+  } catch (error) {
+    console.error("GET MY JDS ERROR:", error);
+    res.status(500).json({
+      message: "Server error",
+    });
   }
 };
