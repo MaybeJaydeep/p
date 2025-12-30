@@ -24,7 +24,14 @@ function App() {
           }
         />
 
-        <Route path="/jd/:id" element={<JDDetail />} />
+        <Route
+          path="/jd/:id"
+          element={
+            <ProtectedRoute>
+              <JDDetail />
+            </ProtectedRoute>
+          }
+        />
 
         <Route
           path="/upload"

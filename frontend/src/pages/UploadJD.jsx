@@ -1,14 +1,17 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { Upload, FileText, X, Loader2, CheckCircle2 } from "lucide-react";
 
 import api from "@/services/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useToast } from "@/components/ui/toast";
 
 const UploadJD = () => {
   const navigate = useNavigate();
+  const { success: showSuccess, error: showError } = useToast();
 
   const [companyName, setCompanyName] = useState("");
   const [jobTitle, setJobTitle] = useState("");
@@ -17,20 +20,37 @@ const UploadJD = () => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [progress, setProgress] = useState(0); // ✅ MOVED HERE
+  const [progress, setProgress] = useState(0);
 
   // ✅ Handle file validation
   const handleFile = (selectedFile) => {
+    if (!selectedFile) return;
+
+    // Check file type
     if (
-      selectedFile &&
-      (selectedFile.type === "application/pdf" ||
-        selectedFile.type === "text/plain")
+      selectedFile.type !== "application/pdf" &&
+      selectedFile.type !== "text/plain"
     ) {
-      setFile(selectedFile);
-      setError("");
-    } else {
       setError("Only PDF or TXT files are allowed");
+      showError("Only PDF or TXT files are allowed");
+      return;
     }
+
+    // Check file size (max 10MB)
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    if (selectedFile.size > maxSize) {
+      setError("File size must be less than 10MB");
+      showError("File size must be less than 10MB");
+      return;
+    }
+
+    setFile(selectedFile);
+    setError("");
+  };
+
+  const removeFile = () => {
+    setFile(null);
+    setError("");
   };
 
   // ✅ Handle paste (Ctrl + V)
@@ -50,12 +70,19 @@ const UploadJD = () => {
 
     if (!file) {
       setError("Please upload a JD file");
+      showError("Please upload a JD file");
+      return;
+    }
+
+    if (!companyName.trim() || !jobTitle.trim()) {
+      setError("Please fill in all fields");
+      showError("Please fill in all fields");
       return;
     }
 
     const formData = new FormData();
-    formData.append("companyName", companyName);
-    formData.append("jobTitle", jobTitle);
+    formData.append("companyName", companyName.trim());
+    formData.append("jobTitle", jobTitle.trim());
     formData.append("file", file);
 
     try {
@@ -71,9 +98,14 @@ const UploadJD = () => {
         },
       });
 
-      navigate("/");
+      showSuccess("Job description uploaded successfully!");
+      setTimeout(() => {
+        navigate("/");
+      }, 1000);
     } catch (err) {
-      setError(err.response?.data?.message || "Upload failed");
+      const errorMessage = err.response?.data?.message || "Upload failed. Please try again.";
+      setError(errorMessage);
+      showError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -108,12 +140,12 @@ const UploadJD = () => {
             setDragActive(false);
             handleFile(e.dataTransfer.files[0]);
           }}
-          className={`border-2 border-dashed rounded-2xl h-[300px]
-            flex items-center justify-center text-center transition
+          className={`border-2 border-dashed rounded-2xl min-h-[300px]
+            flex flex-col items-center justify-center text-center transition-all
             ${
               dragActive
-                ? "border-primary bg-primary/10"
-                : "border-muted"
+                ? "border-primary bg-primary/10 scale-[1.02]"
+                : "border-muted hover:border-primary/50"
             }`}
         >
           <input
@@ -124,27 +156,58 @@ const UploadJD = () => {
             onChange={(e) =>
               handleFile(e.target.files[0])
             }
+            disabled={loading}
           />
 
-          <label
-            htmlFor="fileInput"
-            className="cursor-pointer px-6"
-          >
-            {file ? (
-              <p className="text-lg font-medium">
-                📄 {file.name}
-              </p>
-            ) : (
-              <>
+          {file ? (
+            <div className="flex flex-col items-center gap-4 px-6">
+              <div className="flex items-center gap-3 bg-muted rounded-lg px-4 py-3">
+                <FileText className="h-8 w-8 text-primary" />
+                <div className="text-left">
+                  <p className="text-lg font-medium">{file.name}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {(file.size / 1024).toFixed(2)} KB
+                  </p>
+                </div>
+                {!loading && (
+                  <button
+                    onClick={removeFile}
+                    className="ml-4 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                )}
+              </div>
+              {!loading && (
+                <label
+                  htmlFor="fileInput"
+                  className="text-sm text-primary hover:underline cursor-pointer"
+                >
+                  Choose a different file
+                </label>
+              )}
+            </div>
+          ) : (
+            <label
+              htmlFor="fileInput"
+              className="cursor-pointer px-6 flex flex-col items-center gap-3"
+            >
+              <div className="rounded-full bg-muted p-4">
+                <Upload className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <div>
                 <p className="text-lg font-medium">
                   Drag & drop your JD here
                 </p>
                 <p className="text-sm text-muted-foreground mt-1">
                   or click to browse • or paste (Ctrl + V)
                 </p>
-              </>
-            )}
-          </label>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Supports PDF and TXT files up to 10MB
+                </p>
+              </div>
+            </label>
+          )}
         </div>
       </motion.div>
 
@@ -184,11 +247,18 @@ const UploadJD = () => {
         </div>
 
         {loading && (
-          <div className="w-full bg-muted rounded h-2 overflow-hidden md:col-span-3">
-            <div
-              className="h-full bg-primary transition-all"
-              style={{ width: `${progress}%` }}
-            />
+          <div className="md:col-span-3 space-y-2">
+            <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+              <motion.div
+                className="h-full bg-primary"
+                initial={{ width: 0 }}
+                animate={{ width: `${progress}%` }}
+                transition={{ duration: 0.3 }}
+              />
+            </div>
+            <p className="text-sm text-muted-foreground text-center">
+              Uploading... {progress}%
+            </p>
           </div>
         )}
 
@@ -196,9 +266,20 @@ const UploadJD = () => {
           <Button
             type="submit"
             className="w-full"
-            disabled={loading}
+            disabled={loading || !file}
+            size="lg"
           >
-            {loading ? "Uploading..." : "Upload JD"}
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Uploading...
+              </>
+            ) : (
+              <>
+                <Upload className="mr-2 h-4 w-4" />
+                Upload JD
+              </>
+            )}
           </Button>
         </div>
       </form>
