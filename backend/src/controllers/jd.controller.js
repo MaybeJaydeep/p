@@ -1,7 +1,7 @@
 import fs from "fs";
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
 import JobDescription from "../models/JobDescription.model.js";
-import { analyzeJD } from "../utils/jdAnalyzer.js";
+import analyzeJD from "../utils/jdAnalyzer.js";
 
 /**
  * GET /api/jd/:id
@@ -40,7 +40,6 @@ export const getJDById = async (req, res) => {
  * Upload JD file (PDF / TXT), extract text, analyze, store
  */
 
-
 export const uploadJD = async (req, res) => {
   try {
     console.log("USER:", req.user);
@@ -57,9 +56,7 @@ export const uploadJD = async (req, res) => {
 
     // ---------- PDF ----------
     if (req.file.mimetype === "application/pdf") {
-      const buffer = new Uint8Array(
-        fs.readFileSync(req.file.path)
-      );
+      const buffer = new Uint8Array(fs.readFileSync(req.file.path));
 
       const loadingTask = pdfjsLib.getDocument({ data: buffer });
       const pdf = await loadingTask.promise;
@@ -67,8 +64,7 @@ export const uploadJD = async (req, res) => {
       for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
         const content = await page.getTextContent();
-        rawText +=
-          content.items.map((item) => item.str).join(" ") + " ";
+        rawText += content.items.map((item) => item.str).join(" ") + " ";
       }
     }
     // ---------- TXT ----------
@@ -81,7 +77,10 @@ export const uploadJD = async (req, res) => {
     }
 
     // ---------- NLP / ANALYSIS ----------
-    const analysis = analyzeJD(rawText);
+    const analysis = await analyzeJD({
+      text: rawText,
+      companyName,
+    });
 
     // ---------- SAVE ----------
     const jd = await JobDescription.create({
@@ -89,7 +88,7 @@ export const uploadJD = async (req, res) => {
       jobTitle,
       rawText,
       analysis,
-      uploadedBy: req.user.id
+      uploadedBy: req.user.id,
     });
 
     res.status(201).json({
