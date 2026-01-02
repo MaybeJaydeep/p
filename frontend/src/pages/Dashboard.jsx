@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FileText, Upload, Loader2 } from "lucide-react";
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 
 const Dashboard = () => {
+  const errorShownRef = useRef(false);
   const navigate = useNavigate();
   const { error: showError } = useToast();
   const [jds, setJds] = useState([]);
@@ -16,12 +17,24 @@ const Dashboard = () => {
 
   useEffect(() => {
     const fetchJDs = async () => {
+      const accessToken = localStorage.getItem("accessToken");
+  if (!accessToken) {
+    setLoading(false);
+    return;
+  }
       try {
         const res = await api.get("/jd/my");
         setJds(res.data);
       } catch (err) {
-        showError("Failed to load job descriptions. Please try again.");
-        console.error(err);
+        // If auth failed, interceptor will handle redirect
+        if (err.response?.status === 401 || err.response?.status === 403) {
+          return;
+        }
+
+        if (!errorShownRef.current) {
+          showError("Failed to load job descriptions. Please try again.");
+          errorShownRef.current = true;
+        }
       } finally {
         setLoading(false);
       }
@@ -68,7 +81,8 @@ const Dashboard = () => {
             No Job Descriptions Yet
           </h2>
           <p className="text-muted-foreground mb-6">
-            Get started by uploading your first job description. We'll analyze it and create a personalized learning roadmap for you.
+            Get started by uploading your first job description. We'll analyze
+            it and create a personalized learning roadmap for you.
           </p>
           <Button onClick={() => navigate("/upload")} size="lg">
             <Upload className="mr-2 h-4 w-4" />
@@ -83,11 +97,10 @@ const Dashboard = () => {
     <div className="p-8 max-w-7xl mx-auto">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold">
-            Your Job Descriptions
-          </h1>
+          <h1 className="text-3xl font-bold">Your Job Descriptions</h1>
           <p className="text-muted-foreground mt-1">
-            {jds.length} {jds.length === 1 ? "job description" : "job descriptions"}
+            {jds.length}{" "}
+            {jds.length === 1 ? "job description" : "job descriptions"}
           </p>
         </div>
         <Button onClick={() => navigate("/upload")}>
