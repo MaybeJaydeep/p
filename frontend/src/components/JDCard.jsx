@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Building2, Briefcase, Calendar } from "lucide-react";
+import { Building2, Briefcase, Calendar, Brain } from "lucide-react";
 
 const JDCard = ({ jd }) => {
   const navigate = useNavigate();
@@ -14,6 +14,14 @@ const JDCard = ({ jd }) => {
       return "Recently";
     }
   };
+
+  // 🔹 NEW: extract top skills from NLP output
+  const topSkills = jd.skills
+    ? Object.values(jd.skills)
+        .flat()
+        .sort((a, b) => b.weight - a.weight)
+        .slice(0, 4)
+    : [];
 
   return (
     <motion.div
@@ -43,21 +51,27 @@ const JDCard = ({ jd }) => {
         </div>
       </div>
 
-      {jd.technologies && jd.technologies.length > 0 && (
-        <div className="flex flex-wrap gap-2 mt-4 mb-3">
-          {jd.technologies.slice(0, 4).map((tech) => (
+      {/* 🔹 ROLE BADGE (optional but powerful) */}
+      {jd.role && (
+        <div className="flex items-center gap-1.5 text-xs text-primary font-medium mb-3">
+          <Brain className="h-3 w-3" />
+          {jd.role}
+        </div>
+      )}
+
+      {/* 🔹 SKILLS SECTION (Phase-2 NLP) */}
+      {topSkills.length > 0 && (
+        <div className="flex flex-wrap gap-2 mt-3 mb-3">
+          {topSkills.map((s) => (
             <span
-              key={tech}
-              className="text-xs px-2.5 py-1 rounded-full bg-primary/10 text-primary font-medium border border-primary/20"
+              key={s.skill}
+              className="text-xs px-2.5 py-1 rounded-full
+                         bg-primary/10 text-primary font-medium
+                         border border-primary/20"
             >
-              {tech}
+              {s.skill}
             </span>
           ))}
-          {jd.technologies.length > 4 && (
-            <span className="text-xs px-2.5 py-1 rounded-full bg-muted text-muted-foreground">
-              +{jd.technologies.length - 4} more
-            </span>
-          )}
         </div>
       )}
 

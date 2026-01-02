@@ -1,7 +1,14 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Building2, Briefcase, Code, FileText, AlertCircle, Loader2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Building2,
+  Briefcase,
+  Code,
+  FileText,
+  AlertCircle,
+} from "lucide-react";
 import api from "@/services/api";
 import Roadmap from "@/components/Roadmap";
 import { Button } from "@/components/ui/button";
@@ -13,6 +20,7 @@ export default function JDDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { error: showError } = useToast();
+
   const [jd, setJD] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -53,18 +61,6 @@ export default function JDDetail() {
             <Skeleton className="h-4 w-3/4" />
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-6 w-40" />
-          </CardHeader>
-          <CardContent>
-            <div className="flex gap-2">
-              <Skeleton className="h-8 w-20 rounded-full" />
-              <Skeleton className="h-8 w-24 rounded-full" />
-              <Skeleton className="h-8 w-16 rounded-full" />
-            </div>
-          </CardContent>
-        </Card>
       </div>
     );
   }
@@ -80,10 +76,13 @@ export default function JDDetail() {
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Dashboard
         </Button>
+
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
-            <h2 className="text-xl font-semibold mb-2">Job Description Not Found</h2>
+            <h2 className="text-xl font-semibold mb-2">
+              Job Description Not Found
+            </h2>
             <p className="text-muted-foreground mb-4">
               The job description you're looking for doesn't exist or has been removed.
             </p>
@@ -96,9 +95,15 @@ export default function JDDetail() {
     );
   }
 
+  // 🔹 Phase-2 NLP data
+  const role = jd.analysis?.role;
+  const skillsByCategory = jd.analysis?.skills || {};
+  const roadmap = jd.analysis?.roadmap || [];
+  const summary = jd.analysis?.summary;
+
   return (
     <div className="max-w-5xl mx-auto p-6 space-y-6">
-      {/* BACK BUTTON & HEADER */}
+      {/* HEADER */}
       <div className="flex items-center gap-4">
         <Button
           variant="ghost"
@@ -108,6 +113,7 @@ export default function JDDetail() {
         >
           <ArrowLeft className="h-4 w-4" />
         </Button>
+
         <div className="flex-1">
           <motion.div
             initial={{ opacity: 0, y: -10 }}
@@ -117,6 +123,7 @@ export default function JDDetail() {
             <Building2 className="h-6 w-6 text-primary" />
             <h1 className="text-3xl font-bold">{jd.companyName}</h1>
           </motion.div>
+
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -144,13 +151,13 @@ export default function JDDetail() {
           </CardHeader>
           <CardContent>
             <p className="text-lg font-medium">
-              {jd.analysis?.role || jd.identifiedRole || "Not detected"}
+              {role || "Not detected"}
             </p>
           </CardContent>
         </Card>
       </motion.div>
 
-      {/* TECHNOLOGIES */}
+      {/* SKILLS */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -160,30 +167,41 @@ export default function JDDetail() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Code className="h-5 w-5" />
-              Required Technologies
+              Required Skills
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            {jd.technologies && jd.technologies.length > 0 ? (
-              <div className="flex flex-wrap gap-2">
-                {jd.technologies.map((t) => (
-                  <span
-                    key={t}
-                    className="px-3 py-1.5 rounded-full bg-primary/10 text-sm font-medium border border-primary/20"
-                  >
-                    {t}
-                  </span>
-                ))}
-              </div>
+          <CardContent className="space-y-4">
+            {Object.keys(skillsByCategory).length > 0 ? (
+              Object.entries(skillsByCategory).map(([category, skills]) =>
+                skills.length > 0 ? (
+                  <div key={category}>
+                    <p className="text-sm font-semibold uppercase text-muted-foreground mb-2">
+                      {category}
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {skills.map((s) => (
+                        <span
+                          key={s.skill}
+                          className="px-3 py-1.5 rounded-full bg-primary/10 text-sm font-medium border border-primary/20"
+                        >
+                          {s.skill}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ) : null
+              )
             ) : (
-              <p className="text-muted-foreground">No technologies detected</p>
+              <p className="text-muted-foreground">
+                No skills detected
+              </p>
             )}
           </CardContent>
         </Card>
       </motion.div>
 
       {/* SUMMARY */}
-      {jd.summary && (
+      {summary && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -193,12 +211,12 @@ export default function JDDetail() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <FileText className="h-5 w-5" />
-                Job Description Summary
+                JD Summary
               </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground leading-relaxed">
-                {jd.summary}
+                {summary}
               </p>
             </CardContent>
           </Card>
@@ -213,10 +231,10 @@ export default function JDDetail() {
       >
         <Card>
           <CardHeader>
-            <CardTitle>Learning Roadmap</CardTitle>
+            <CardTitle>Preparation Roadmap</CardTitle>
           </CardHeader>
           <CardContent>
-            <Roadmap tech={jd.technologies} />
+            <Roadmap roadmap={roadmap} />
           </CardContent>
         </Card>
       </motion.div>

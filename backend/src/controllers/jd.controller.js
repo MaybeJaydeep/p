@@ -12,26 +12,24 @@ export const getJDById = async (req, res) => {
     const jd = await JobDescription.findById(req.params.id);
 
     if (!jd) {
-      return res.status(404).json({
-        message: "Job Description not found",
-      });
+      return res.status(404).json({ message: "Job Description not found" });
     }
 
     res.json({
       _id: jd._id,
       companyName: jd.companyName,
       jobTitle: jd.jobTitle,
-      rawText: jd.rawText,
-      identifiedRole: jd.analysis?.role || null,
-      technologies: jd.analysis?.technologies || [],
-      summary: jd.analysis?.summary || null,
       createdAt: jd.createdAt,
+      analysis: {
+        role: jd.analysis?.role,
+        skills: jd.analysis?.skills,
+        roadmap: jd.analysis?.roadmap,
+        summary: jd.analysis?.summary,
+      },
     });
   } catch (error) {
     console.error("GET JD BY ID ERROR:", error);
-    res.status(500).json({
-      message: "Server error",
-    });
+    res.status(500).json({ message: "Server error" });
   }
 };
 
@@ -95,7 +93,13 @@ export const uploadJD = async (req, res) => {
       _id: jd._id,
       companyName: jd.companyName,
       jobTitle: jd.jobTitle,
-      technologies: jd.analysis?.technologies || [],
+      analysis: {
+        role: jd.analysis?.role,
+        skills: jd.analysis?.skills,
+        roadmap: jd.analysis?.roadmap,
+        summary: jd.analysis?.summary,
+      },
+      createdAt: jd.createdAt,
     });
   } catch (error) {
     console.error("UPLOAD JD ERROR:", error);
@@ -120,7 +124,8 @@ export const getMyJDs = async (req, res) => {
         _id: jd._id,
         companyName: jd.companyName,
         jobTitle: jd.jobTitle,
-        technologies: jd.analysis?.technologies || [],
+        role: jd.analysis?.role,
+        skills: jd.analysis?.skills,
         createdAt: jd.createdAt,
       }))
     );
