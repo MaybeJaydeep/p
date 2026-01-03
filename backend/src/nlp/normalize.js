@@ -1,11 +1,18 @@
 export const normalizeText = (text = "") => {
-  if (typeof text !== "string") {
-    throw new Error("normalizeText expects a string");
-  }
-
   return text
     .toLowerCase()
-    .replace(/[^a-z0-9.+#\s]/g, " ")
+
+    // common tech normalizations
+    .replace(/node\.js/g, "node")
+    .replace(/express\.js/g, "express")
+    .replace(/react\.js/g, "react")
+    .replace(/rest\s*apis?/g, "rest api")
+    .replace(/mongo\s*db/g, "mongodb")
+
+    // clean symbols
+    .replace(/[^a-z0-9+#.\s]/g, " ")
+
+    // normalize whitespace
     .replace(/\s+/g, " ")
     .trim();
 };

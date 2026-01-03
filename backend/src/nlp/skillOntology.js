@@ -1,17 +1,30 @@
-export const categorizeSkills = (skillFreq, skillOntology) => {
-  const categorized = {};
+export const SKILL_ONTOLOGY = {
+  backend: [
+    "node",
+    "express",
+    "rest api",
+    "jwt",
+  ],
 
-  for (const category in skillOntology) {
-    categorized[category] = [];
-    skillOntology[category].forEach(skill => {
-      if (skillFreq[skill]) {
-        categorized[category].push({
-          skill,
-          weight: skillFreq[skill]
-        });
-      }
-    });
-  }
+  frontend: [
+    "react",
+    "html",
+    "css",
+  ],
 
-  return categorized;
+  database: [
+    "mongodb",
+    "sql",
+    "postgresql",
+  ],
+
+  devops: [
+    "docker",
+    "aws",
+  ],
+
+  fundamentals: [
+    "data structures",
+    "algorithms",
+  ],
 };

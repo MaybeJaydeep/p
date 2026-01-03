@@ -1,29 +1,45 @@
 import { normalizeText } from "./normalize.js";
 import { extractSkillsWithFrequency } from "./skillExtractor.js";
-import { categorizeSkills } from "./skillOntology.js";
+import { categorizeSkills } from "./skillCategorizer.js";
 import { inferRole } from "./roleInferencer.js";
 import { generateRoadmap } from "./roadmapGenerator.js";
-import { enrichWithCompanyData } from "./companyEnricher.js";
 import { generateSummary } from "./summaryGenerator.js";
-import { SKILLS } from "../data/skills.js";
+import { SKILL_ONTOLOGY } from "./skillOntology.js";
 
-export const analyzeJD = async ({ text, companyName }) => {
-  const cleanText = normalizeText(text);
+const analyzeJD = ({ text, companyName }) => {
+  // 1️⃣ Normalize text
+  const normalizedText = normalizeText(text);
 
-  const skillFreq = extractSkillsWithFrequency(cleanText, SKILLS);
-  const categorizedSkills = categorizeSkills(skillFreq, SKILLS);
+  // 2️⃣ Extract skill frequencies
+  const skillFrequencies = extractSkillsWithFrequency(
+    normalizedText,
+    SKILL_ONTOLOGY
+  );
 
-  const role = inferRole(categorizedSkills);
-  const roadmap = generateRoadmap(categorizedSkills);
+  // 3️⃣ Categorize skills
+  const skills = categorizeSkills(skillFrequencies);
 
-  const enrichment = await enrichWithCompanyData(companyName, role);
-  const summary = generateSummary(role, companyName);
+  // 4️⃣ Infer role
+  const role = inferRole(skills);
+
+  // 5️⃣ Generate roadmap
+  const roadmap = generateRoadmap(skills, role);
+
+  // 6️⃣ Generate summary
+  const summary = generateSummary({ role, companyName });
+
+  // 🔍 TEMP DEBUG LOG (SAFE NOW)
+  console.log("🧠 NLP OUTPUT", {
+    skills,
+    roadmap
+  });
 
   return {
     role,
-    skills: categorizedSkills,
+    skills,
     roadmap,
-    enrichment,
     summary
   };
 };
+
+export default analyzeJD;

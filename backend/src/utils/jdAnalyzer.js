@@ -1,3 +1,3 @@
-import { analyzeJD } from "../nlp/index.js";
+import  analyzeJD  from "../nlp/index.js";
 
 export default analyzeJD;
