@@ -28,12 +28,6 @@ const analyzeJD = ({ text, companyName }) => {
   // 6️⃣ Generate summary
   const summary = generateSummary({ role, companyName });
 
-  // 🔍 TEMP DEBUG LOG (SAFE NOW)
-  console.log("🧠 NLP OUTPUT", {
-    skills,
-    roadmap
-  });
-
   return {
     role,
     skills,
