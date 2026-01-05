@@ -2,20 +2,20 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Building2, Briefcase, Calendar, Brain } from "lucide-react";
 
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
 const JDCard = ({ jd }) => {
   const navigate = useNavigate();
 
   const formatDate = (dateString) => {
     try {
       const date = new Date(dateString);
-      const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-      return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+      return `${MONTHS[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
     } catch {
       return "Recently";
     }
   };
 
-  // 🔹 NEW: extract top skills from NLP output
   const topSkills = jd.skills
     ? Object.values(jd.skills)
         .flat()
@@ -51,7 +51,6 @@ const JDCard = ({ jd }) => {
         </div>
       </div>
 
-      {/* 🔹 ROLE BADGE (optional but powerful) */}
       {jd.role && (
         <div className="flex items-center gap-1.5 text-xs text-primary font-medium mb-3">
           <Brain className="h-3 w-3" />
@@ -59,7 +58,6 @@ const JDCard = ({ jd }) => {
         </div>
       )}
 
-      {/* 🔹 SKILLS SECTION (Phase-2 NLP) */}
       {topSkills.length > 0 && (
         <div className="flex flex-wrap gap-2 mt-3 mb-3">
           {topSkills.map((s) => (
