@@ -23,11 +23,13 @@ const jobDescriptionSchema = new mongoose.Schema(
       role: {
         type: String
       },
-      technologies: [
-        {
-          type: String
-        }
-      ],
+      // `skills` will store categorized skills (object) produced by the analyzer
+      skills: {
+        type: mongoose.Schema.Types.Mixed
+      },
+      roadmap: {
+        type: Array
+      },
       summary: {
         type: String
       }

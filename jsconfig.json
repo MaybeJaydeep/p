@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["frontend/src/*"]
+    }
+  },
+  "include": [
+    "frontend/src/**/*",
+    "backend/src/**/*"
+  ],
+  "exclude": ["node_modules", "dist", "frontend/dist"]
+}

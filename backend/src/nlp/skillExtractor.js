@@ -7,7 +7,9 @@ export const extractSkillsWithFrequency = (text, skillOntology) => {
   for (const category in skillOntology) {
     for (const skill of skillOntology[category]) {
       const escaped = escapeRegex(skill);
-      const regex = new RegExp(escaped, "g"); // ❌ no word boundaries
+      // allow flexible whitespace inside multi-word skills and use word boundaries
+      const pattern = "\\b" + escaped.replace(/\\s+/g, "\\\\s+") + "\\b";
+      const regex = new RegExp(pattern, "gi");
 
       const matches = text.match(regex);
       if (matches) {

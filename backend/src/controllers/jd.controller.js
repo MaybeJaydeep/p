@@ -106,6 +106,17 @@ export const uploadJD = async (req, res) => {
     res.status(500).json({
       message: "JD upload failed",
     });
+  } finally {
+    // cleanup uploaded file to avoid filling disk
+    try {
+      if (req.file && req.file.path) {
+        fs.unlink(req.file.path, (err) => {
+          if (err) console.error("Failed to remove uploaded file:", err);
+        });
+      }
+    } catch (e) {
+      console.error("Error during uploaded file cleanup:", e);
+    }
   }
 };
 

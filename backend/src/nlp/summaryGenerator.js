@@ -1,5 +1,5 @@
-export const generateSummary = (role, company) => {
-  return `This job description aligns with a ${role} role. 
-The company expects strong technical fundamentals and hands-on experience.
-Focused preparation with structured learning will maximize placement chances.`;
+export const generateSummary = ({ role, companyName } = {}) => {
+  return `This job description aligns with a ${role} role at ${companyName || "the company"}.
+The role emphasizes technical fundamentals and hands-on experience.
+Targeted, structured preparation will improve placement chances.`;
 };
