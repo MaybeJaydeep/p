@@ -1,30 +1,5 @@
-import { BookOpen } from "lucide-react";
-
-/**
- * Optional resource mapping (can expand later)
- */
-const RESOURCES = {
-  "data structures": [
-    { name: "Striver DSA Sheet", url: "https://takeuforward.org" },
-    { name: "GeeksforGeeks DSA", url: "https://geeksforgeeks.org" },
-  ],
-  algorithms: [
-    { name: "CP-Algorithms", url: "https://cp-algorithms.com" },
-  ],
-  react: [
-    { name: "React Official Docs", url: "https://react.dev" },
-    { name: "FreeCodeCamp React", url: "https://freecodecamp.org" },
-  ],
-  node: [
-    { name: "Node.js Docs", url: "https://nodejs.org" },
-  ],
-  express: [
-    { name: "Express Docs", url: "https://expressjs.com" },
-  ],
-  mongodb: [
-    { name: "MongoDB University", url: "https://university.mongodb.com" },
-  ],
-};
+import { BookOpen, ExternalLink } from "lucide-react";
+import RESOURCES from "@/data/learningResources";
 
 export default function Roadmap({ roadmap }) {
   if (!roadmap || roadmap.length === 0) {
@@ -36,51 +11,60 @@ export default function Roadmap({ roadmap }) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {roadmap.map((phase, index) => (
         <div
           key={index}
-          className="border rounded-lg p-5 bg-background"
+          className="border rounded-xl p-5 bg-muted/30"
         >
-          {/* PHASE HEADER */}
-          <div className="flex items-center gap-2 mb-3">
-            <div className="h-7 w-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-bold">
+          {/* Phase header */}
+          <div className="flex items-center gap-3 mb-4">
+            <div className="h-8 w-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-bold shrink-0">
               {index + 1}
             </div>
-            <h3 className="text-lg font-semibold">
+            <h3 className="text-base font-semibold tracking-wide">
               {phase.phase}
             </h3>
           </div>
 
-          {/* TOPICS */}
-          <div className="space-y-4">
-            {phase.topics.map((topic) => (
-              <div key={topic}>
-                <p className="font-medium mb-1 capitalize">
-                  {topic}
-                </p>
+          {/* Topics */}
+          <div className="grid gap-3 sm:grid-cols-2">
+            {phase.topics.map((topic) => {
+              const links = RESOURCES[topic] || null;
+              return (
+                <div
+                  key={topic}
+                  className="bg-background rounded-lg p-3 border"
+                >
+                  <p className="font-medium capitalize text-sm mb-2">
+                    {topic}
+                  </p>
 
-                <ul className="list-disc ml-5 space-y-1 text-sm">
-                  {RESOURCES[topic]?.map((r) => (
-                    <li key={r.url}>
-                      <a
-                        href={r.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-primary underline"
-                      >
-                        {r.name}
-                      </a>
-                    </li>
-                  )) || (
-                    <li className="text-muted-foreground flex items-center gap-1">
-                      <BookOpen className="h-4 w-4" />
+                  {links ? (
+                    <ul className="space-y-1">
+                      {links.map((r) => (
+                        <li key={r.url}>
+                          <a
+                            href={r.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex items-center gap-1.5 text-xs text-primary hover:underline"
+                          >
+                            <ExternalLink className="h-3 w-3 shrink-0" />
+                            {r.name}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                      <BookOpen className="h-3 w-3" />
                       Resources coming soon
-                    </li>
+                    </p>
                   )}
-                </ul>
-              </div>
-            ))}
+                </div>
+              );
+            })}
           </div>
         </div>
       ))}

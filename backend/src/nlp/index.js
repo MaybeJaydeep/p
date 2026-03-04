@@ -6,6 +6,10 @@ import { generateRoadmap } from "./roadmapGenerator.js";
 import { generateSummary } from "./summaryGenerator.js";
 import { SKILL_ONTOLOGY } from "./skillOntology.js";
 
+/**
+ * Pure NLP pipeline — synchronous, no external calls.
+ * Company enrichment (Wikipedia) is handled in the controller.
+ */
 const analyzeJD = ({ text, companyName }) => {
   // 1️⃣ Normalize text
   const normalizedText = normalizeText(text);
@@ -22,17 +26,17 @@ const analyzeJD = ({ text, companyName }) => {
   // 4️⃣ Infer role
   const role = inferRole(skills);
 
-  // 5️⃣ Generate roadmap
-  const roadmap = generateRoadmap(skills, role);
+  // 5️⃣ Generate roadmap (sorted by weight + phase order)
+  const roadmap = generateRoadmap(skills);
 
-  // 6️⃣ Generate summary
-  const summary = generateSummary({ role, companyName });
+  // 6️⃣ Generate dynamic summary using role + skills
+  const summary = generateSummary({ role, companyName, skills });
 
   return {
     role,
     skills,
     roadmap,
-    summary
+    summary,
   };
 };
 

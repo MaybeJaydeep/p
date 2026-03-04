@@ -1,10 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Building2, Briefcase, Calendar, Brain } from "lucide-react";
+import { Building2, Briefcase, Calendar, Brain, Trash2 } from "lucide-react";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-const JDCard = ({ jd }) => {
+const JDCard = ({ jd, onDelete }) => {
   const navigate = useNavigate();
 
   const formatDate = (dateString) => {
@@ -23,6 +23,11 @@ const JDCard = ({ jd }) => {
         .slice(0, 4)
     : [];
 
+  const handleDelete = (e) => {
+    e.stopPropagation(); // don't navigate to detail
+    onDelete?.(jd._id);
+  };
+
   return (
     <motion.div
       whileHover={{ scale: 1.02 }}
@@ -30,23 +35,35 @@ const JDCard = ({ jd }) => {
       onClick={() => navigate(`/jd/${jd._id}`)}
       className="border rounded-xl p-5 cursor-pointer
                  hover:shadow-lg hover:border-primary
-                 transition-all bg-background group"
+                 transition-all bg-background group relative"
     >
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <div className="rounded-lg bg-primary/10 p-2 group-hover:bg-primary/20 transition-colors">
-            <Building2 className="h-4 w-4 text-primary" />
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold group-hover:text-primary transition-colors">
-              {jd.companyName}
-            </h3>
-            <div className="flex items-center gap-1.5 mt-0.5">
-              <Briefcase className="h-3 w-3 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">
-                {jd.jobTitle}
-              </p>
-            </div>
+      {/* Delete button */}
+      {onDelete && (
+        <button
+          onClick={handleDelete}
+          className="absolute top-3 right-3 opacity-0 group-hover:opacity-100
+                     transition-opacity p-1.5 rounded-md
+                     text-muted-foreground hover:text-red-500
+                     hover:bg-red-50 dark:hover:bg-red-950/30"
+          title="Delete JD"
+        >
+          <Trash2 className="h-4 w-4" />
+        </button>
+      )}
+
+      <div className="flex items-start gap-2 mb-3 pr-8">
+        <div className="rounded-lg bg-primary/10 p-2 group-hover:bg-primary/20 transition-colors shrink-0">
+          <Building2 className="h-4 w-4 text-primary" />
+        </div>
+        <div className="min-w-0">
+          <h3 className="text-lg font-semibold group-hover:text-primary transition-colors truncate">
+            {jd.companyName}
+          </h3>
+          <div className="flex items-center gap-1.5 mt-0.5">
+            <Briefcase className="h-3 w-3 text-muted-foreground shrink-0" />
+            <p className="text-sm text-muted-foreground truncate">
+              {jd.jobTitle}
+            </p>
           </div>
         </div>
       </div>
@@ -59,7 +76,7 @@ const JDCard = ({ jd }) => {
       )}
 
       {topSkills.length > 0 && (
-        <div className="flex flex-wrap gap-2 mt-3 mb-3">
+        <div className="flex flex-wrap gap-1.5 mt-3 mb-3">
           {topSkills.map((s) => (
             <span
               key={s.skill}
