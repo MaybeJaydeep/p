@@ -1,7 +1,15 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useContext } from "react";
 import { motion } from "framer-motion";
-import { Briefcase, Upload, LogOut, LogIn, UserPlus, Home } from "lucide-react";
+import {
+  Briefcase,
+  Upload,
+  LogOut,
+  LogIn,
+  UserPlus,
+  Home,
+  User,
+} from "lucide-react";
 import { AuthContext } from "../context/AuthContext";
 import ThemeToggle from "./ThemeToggle";
 import { Button } from "./ui/button";
@@ -21,12 +29,15 @@ const Navbar = () => {
   return (
     <nav className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between px-6">
-        <Link to="/" className="flex items-center gap-2 font-bold text-lg hover:opacity-80 transition-opacity">
+        <Link
+          to="/"
+          className="flex items-center gap-2 font-bold text-lg hover:opacity-80 transition-opacity"
+        >
           <Briefcase className="h-5 w-5" />
           <span>PlacedPrep</span>
         </Link>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           {user ? (
             <>
               <Button
@@ -37,6 +48,7 @@ const Navbar = () => {
                 <Home className="mr-2 h-4 w-4" />
                 Dashboard
               </Button>
+
               <Button
                 variant="ghost"
                 onClick={() => navigate("/upload")}
@@ -44,6 +56,15 @@ const Navbar = () => {
                 <Upload className="mr-2 h-4 w-4" />
                 <span className="hidden sm:inline">Upload JD</span>
               </Button>
+
+              <Button
+                variant="ghost"
+                onClick={() => navigate("/profile")}
+              >
+                <User className="mr-2 h-4 w-4" />
+                <span className="hidden sm:inline">Profile</span>
+              </Button>
+
               <Button
                 variant="ghost"
                 onClick={handleLogout}
@@ -55,16 +76,11 @@ const Navbar = () => {
             </>
           ) : (
             <>
-              <Button
-                variant="ghost"
-                onClick={() => navigate("/login")}
-              >
+              <Button variant="ghost" onClick={() => navigate("/login")}>
                 <LogIn className="mr-2 h-4 w-4" />
                 <span className="hidden sm:inline">Login</span>
               </Button>
-              <Button
-                onClick={() => navigate("/register")}
-              >
+              <Button onClick={() => navigate("/register")}>
                 <UserPlus className="mr-2 h-4 w-4" />
                 <span className="hidden sm:inline">Register</span>
               </Button>

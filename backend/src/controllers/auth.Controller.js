@@ -75,3 +75,15 @@ export const refreshAccessToken = async (req, res) => {
     return res.status(403).json({ message: "Invalid refresh token" });
   }
 };
+
+export const getMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json({ name: user.name, email: user.email, role: user.role });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};

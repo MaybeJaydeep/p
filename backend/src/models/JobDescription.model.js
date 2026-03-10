@@ -24,6 +24,7 @@ const jobDescriptionSchema = new mongoose.Schema(
       skills: { type: mongoose.Schema.Types.Mixed },
       roadmap: { type: Array },
       summary: { type: String },
+      interviewTips: { type: mongoose.Schema.Types.Mixed, default: null },
     },
 
     companyInfo: {

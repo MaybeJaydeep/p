@@ -5,6 +5,7 @@ import { inferRole } from "./roleInferencer.js";
 import { generateRoadmap } from "./roadmapGenerator.js";
 import { generateSummary } from "./summaryGenerator.js";
 import { SKILL_ONTOLOGY } from "./skillOntology.js";
+import { INTERVIEW_TIPS } from "../data/interviewTips.js";
 
 /**
  * Pure NLP pipeline — synchronous, no external calls.
@@ -32,11 +33,15 @@ const analyzeJD = ({ text, companyName }) => {
   // 6️⃣ Generate dynamic summary using role + skills
   const summary = generateSummary({ role, companyName, skills });
 
+  // 7️⃣ Attach interview tips for inferred role
+  const interviewTips = INTERVIEW_TIPS[role] || null;
+
   return {
     role,
     skills,
     roadmap,
     summary,
+    interviewTips,
   };
 };
 

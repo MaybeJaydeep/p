@@ -4,8 +4,9 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import UploadJD from "./pages/UploadJD";
-import ProtectedRoute from "./components/ProtectedRoute";
 import JDDetail from "./pages/JDDetail";
+import Profile from "./pages/Profile";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
@@ -38,6 +39,15 @@ function App() {
           element={
             <ProtectedRoute>
               <UploadJD />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
             </ProtectedRoute>
           }
         />

@@ -25,6 +25,7 @@ export const getJDById = async (req, res) => {
         skills: jd.analysis?.skills,
         roadmap: jd.analysis?.roadmap,
         summary: jd.analysis?.summary,
+        interviewTips: jd.analysis?.interviewTips || null,
       },
       companyInfo: jd.companyInfo || null,
     });
